@@ -45,6 +45,12 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Trying Treasure Map Game
+
+You can access to the endpoint `[POST] localhost:3000/upload` and send multipart-form data file.
+
+See the swagger ui to get more informations [here](127.0.0.1:3000/swagger).
+
 ## Test
 
 ```bash
