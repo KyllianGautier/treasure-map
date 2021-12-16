@@ -14,4 +14,8 @@ export class Mountain extends Localizable {
     toString(): string {
         return 'M'.padEnd(7, ' ');
     }
+
+    toFile(): string {
+        return `M - ${ this.column } - ${ this.row }`;
+    }
 }

@@ -1,7 +1,7 @@
-import { Direction, Player } from '../model/player';
-import { TreasureMap } from '../model/treasure-map';
-import { Mountain } from '../model/mountain';
-import { Treasure } from '../model/treasure';
+import { Direction, Player } from '../core/player';
+import { TreasureMap } from '../core/treasure-map';
+import { Mountain } from '../core/mountain';
+import { Treasure } from '../core/treasure';
 
 export function fileToDescriptions(fileContent: string): string[] {
 	return fileContent.split('\n').map((description: string) => cleanDescription(description));
@@ -9,7 +9,7 @@ export function fileToDescriptions(fileContent: string): string[] {
 
 // Player pattern:
 // {A comme Aventurier} - {Nom de l’aventurier} - {Axe horizontal} - {Axe vertical} - {Orientation} - {Séquence de mouvement}
-export function playerMapper(playerDescription: string): Player {
+export function playerMapper(playerDescription: string, treasureMap: TreasureMap): Player {
 	const descriptionParts: string[] = descriptionToParts(playerDescription);
 
 	const directions: { [key: string]: Direction } = {};
@@ -23,7 +23,8 @@ export function playerMapper(playerDescription: string): Player {
 		+descriptionParts[2], // column
 		+descriptionParts[3], // row
 		directions[descriptionParts[4]], // direction
-		descriptionParts[5].split('') // actions
+		descriptionParts[5].split(''), // actions
+		treasureMap
 	)
 }
 

@@ -28,8 +28,7 @@ export class AppController {
     },
   })
   uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.debug(file.buffer.toString().split('\n'));
-    this.appService.getResultMap(file.buffer.toString());
+    return this.appService.getResultMap(file.buffer.toString());
   }
 
 }

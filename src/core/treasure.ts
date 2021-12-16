@@ -34,4 +34,8 @@ export class Treasure extends Localizable {
     toString(): string {
         return 'T ' + `(${ this.quantity })`.padEnd(5, ' ');
     }
+
+    toFile(): string {
+        return `T - ${ this.column } - ${ this.row } - ${ this.quantity }`;
+    }
 }

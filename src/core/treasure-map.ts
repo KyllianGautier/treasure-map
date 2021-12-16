@@ -31,9 +31,12 @@ export class TreasureMap {
     }
 
     addPlayer(player: Player) {
+        if (!this.isLocationEmpty(player.row, player.column)) {
+            throw new Error('This place is already taken');
+        }
         this.players.push(player);
         this.players = this.players
-            .sort((player1: Localizable, player2: Localizable) => player1.isBefore(player2) ? 1 : -1);
+            .sort((player1: Localizable, player2: Localizable) => player1.isBefore(player2) ? -1 : 1);
     }
 
     get mountains(): Mountain[] {
@@ -45,6 +48,9 @@ export class TreasureMap {
     }
 
     addMountain(mountain: Mountain) {
+        if (!this.isLocationEmpty(mountain.row, mountain.column)) {
+            throw new Error('This place is already taken');
+        }
         this.mountains.push(mountain);
     }
 
@@ -68,13 +74,21 @@ export class TreasureMap {
                 }
                 return accu;
             }, [])
-            .sort((treasure1: Localizable, treasure2: Localizable) => treasure1.isBefore(treasure2) ? 1 : -1)
+            .sort((treasure1: Localizable, treasure2: Localizable) => treasure1.isBefore(treasure2) ? -1 : 1)
+    }
+
+    getObstacles(): Localizable[] {
+        return [...this.mountains, ...this.players];
     }
 
     runTheTreasureGame(): void {
         while (!this.isGameFinish()) {
             this.doSingleTurn();
         }
+    }
+
+    private isLocationEmpty(row: number, column: number): boolean {
+        return ![...this.players, ...this.mountains, ...this.treasures].some((element: Localizable) => element.isAt(row, column));
     }
 
     private isGameFinish(): boolean {
@@ -84,7 +98,7 @@ export class TreasureMap {
     }
 
     private doSingleTurn(): void {
-        this.players.forEach((player: Player) => player.doAction(this._rows, this._columns, [...this.mountains, ...this.players], this.treasures));
+        this.players.forEach((player: Player) => player.doAction());
         this.players = this.players
             .sort((player1: Localizable, player2: Localizable) => player1.isBefore(player2) ? 1 : -1);
         console.debug(this.toString());
@@ -109,6 +123,11 @@ export class TreasureMap {
     }
 
     toFile(): string {
-        return '';
+        return [
+            `C - ${ this.columns } - ${ this.rows }`,
+            this.mountains.map((mountain: Mountain) => mountain.toFile()).join('\n'),
+            this.treasures.map((treasure: Treasure) => treasure.toFile()).join('\n'),
+            this.players.map((player: Player) => player.toFile()).join('\n')
+        ].join('\n');
     }
 }

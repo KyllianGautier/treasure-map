@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TreasureMap } from '../model/treasure-map';
+import { TreasureMap } from '../core/treasure-map';
 import {
   fileToDescriptions,
   mountainMapper,
@@ -14,10 +14,13 @@ export class AppService {
     return 'Hello World!';
   }
 
-  getResultMap(fileContent: string): void {
+  getResultMap(fileContent: string): string {
     const treasureMap: TreasureMap = this.getTreasureMap(fileContent);
     console.debug(treasureMap.toString());
+
     treasureMap.runTheTreasureGame();
+
+    return treasureMap.toFile();
   }
 
   private getTreasureMap(fileContent: string): TreasureMap {
@@ -27,7 +30,7 @@ export class AppService {
 
       descriptions.forEach((description: string) => {
         if (description[0] === 'A') {
-          treasureMap.addPlayer(playerMapper(description));
+          treasureMap.addPlayer(playerMapper(description, treasureMap));
         } else if (description[0] === 'M') {
           treasureMap.addMountain(mountainMapper(description));
         } else if (description[0] === 'T') {

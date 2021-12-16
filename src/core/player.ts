@@ -1,5 +1,6 @@
 import { Localizable } from './localizable';
 import { Treasure } from './treasure';
+import { TreasureMap } from './treasure-map';
 
 export type Direction = 'North' | 'East' | 'South' | 'West';
 
@@ -12,7 +13,8 @@ export class Player extends Localizable {
         protected _column: number,
         protected _row: number,
         private _direction: Direction,
-        private readonly _actions: string[]
+        private readonly _actions: string[],
+        private readonly _treasureMap: TreasureMap
     ) {
         super(_column, _row);
     }
@@ -45,22 +47,25 @@ export class Player extends Localizable {
         return this._actions;
     }
 
-    doAction(mapRows: number, mapColumns: number, obstacles: Localizable[], treasures: Treasure[]): void {
-        switch (this.actions.shift()) {
-            case 'A':
-                this.goForward(mapRows, mapColumns, obstacles, treasures);
-                break;
-            case 'G':
-                this.turnRound('G');
-                break;
-            case 'D':
-                this.turnRound('D');
-                break;
+    doAction(): void {
+        if (this.actions.length > 0) {
+            switch (this.actions.shift()) {
+                case 'A':
+                    this.goForward();
+                    break;
+                case 'G':
+                    this.turnRound('G');
+                    break;
+                case 'D':
+                    this.turnRound('D');
+                    break;
+            }
         }
+        // If no action left, then ignore this game turn
     }
 
-    private goForward(mapRows: number, mapColumns: number, obstacles: Localizable[], treasures: Treasure[]): void {
-        const [maxRowIndex, maxColumnIndex] = [mapRows - 1, mapColumns - 1];
+    private goForward(): void {
+        const [maxRowIndex, maxColumnIndex] = [this.treasureMap.rows - 1, this.treasureMap.columns - 1];
         let [nextRowIndex, nextColumnIndex] = [this.row, this.column];
 
         switch (this.direction) {
@@ -74,7 +79,7 @@ export class Player extends Localizable {
                 break;
             case 'South':
                 console.debug(this.name + ' wants to go south');
-                nextRowIndex = this.row < maxRowIndex ? this.row + 1 : maxColumnIndex;
+                nextRowIndex = this.row < maxRowIndex ? this.row + 1 : maxRowIndex;
                 break;
             case 'West':
                 console.debug(this.name + ' wants to go west');
@@ -82,22 +87,26 @@ export class Player extends Localizable {
                 break;
         }
 
-        // Check obstacles:
+        // Check obstacle hitting:
+        const obstacles: Localizable[] = this.treasureMap.getObstacles();
         let index: number = obstacles.findIndex((obstacle: Localizable) => obstacle.isAt(nextRowIndex, nextColumnIndex))
 
         if (index >= 0) {
-            console.debug(this.name + ' hits an obstacle', obstacles[index], this.row, this.column);
+            console.debug(this.name + ' hits an obstacle');
             return;
         }
 
+        // If no obstacle has been hit, then update the player's position:
         this.row = nextRowIndex;
         this.column = nextColumnIndex;
 
-        // Check treasures:
+        // Check treasure founding:
+        const treasures: Treasure[] = this.treasureMap.treasures;
         index = treasures.findIndex((obstacle: Localizable) => obstacle.isAt(nextRowIndex, nextColumnIndex))
 
         if (index >= 0) {
-            treasures[index].decreaseQuantity() ? this.increaseTreasureCount() : {};
+            console.debug(this.name + ' has found a treasure !');
+            treasures[index].decreaseQuantity() ? this.increaseTreasureCount() : console.debug('... but it\'s empty :(');
         }
     }
 
@@ -111,7 +120,15 @@ export class Player extends Localizable {
         this.direction = directions[newDirectionIndex];
     }
 
+    get treasureMap(): TreasureMap {
+        return this._treasureMap;
+    }
+
     toString(): string {
         return 'A ' + `(${ this.treasureCount.toString() })`.padEnd(5, ' ');
+    }
+
+    toFile(): string {
+        return `A - ${ this.name } - ${ this.column } - ${ this.row } - ${ this.treasureCount }`;
     }
 }
